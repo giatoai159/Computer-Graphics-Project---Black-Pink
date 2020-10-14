@@ -1,39 +1,44 @@
 from packages import *
 
-w, h = 500, 500
-
-def square():
-    glBegin(GL_QUADS)
-    glVertex2f(100, 100)
-    glVertex2f(200, 100)
-    glVertex2f(200, 200)
-    glVertex2f(100, 200)
-    glEnd()
+display = (800, 600)
+icon = ""
+name = "Black Pink"
+timer = pygame.time.Clock()
 
 
-def iterate():
-    glViewport(0, 0, 500, 500)
-    glMatrixMode(GL_PROJECTION)
-    glLoadIdentity()
-    glOrtho(0.0, 500, 0.0, 500, 0.0, 1.0)
-    glMatrixMode(GL_MODELVIEW)
-    glLoadIdentity()
+def quit_game():
+    pygame.quit()
+    sys.exit()
 
 
-def showScreen():
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    glLoadIdentity()
-    iterate()
-    glColor3f(1.0, 0.0, 3.0)
-    square()
-    glutSwapBuffers()
+def main_menu():
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                quit_game()
+        keys_flag = pygame.key.get_pressed()
+        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
+        glClearColor(1, 1, 1, 1)
+        pygame.display.flip()
+
+def game_init():
+    # PyGame initialization
+    pygame.init()
+    while not pygame.get_init():
+        print("PyGame Initialization Failed.")
+    # Game window properties
+    game_window = pygame.display.set_mode(display, DOUBLEBUF | OPENGL)  # Set game width and height
+    pygame.display.set_caption(name)  # Set game title
+    # _icon = pygame.image.load(icon)  # Load icon
+    # pygame.display.set_icon(_icon)  # Set game icon
+    # Game main loop
+    main_menu()
 
 
-glutInit()
-glutInitDisplayMode(GLUT_RGBA)
-glutInitWindowSize(500, 500)
-glutInitWindowPosition(0, 0)
-wind = glutCreateWindow("OpenGL Coding Practice")
-glutDisplayFunc(showScreen)
-glutIdleFunc(showScreen)
-glutMainLoop()
+
+def main():
+    game_init()
+
+
+main()
+pygame.quit()

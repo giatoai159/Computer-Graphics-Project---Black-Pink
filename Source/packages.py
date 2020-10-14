@@ -1,4 +1,7 @@
+import pygame
+import sys
+import freetype
 from OpenGL.GL import *
-from OpenGL.GLUT import *
-from pygame import *
+from pygame.locals import *
+
 

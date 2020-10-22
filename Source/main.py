@@ -57,8 +57,8 @@ class Rectangle:
         self.vao = glGenVertexArrays(1)
         self.vbo = glGenBuffers(2)
 
-        mod_x = self.x/display[0]/2
-        mod_y = self.y/display[1]/2
+        mod_x = self.x*2/display[0]
+        mod_y = self.y*2/display[1]
 
         self.pos_data = [
             -0.05+mod_x, -0.05+mod_y, 0,
@@ -103,21 +103,24 @@ class Rectangle:
         glDrawArrays(GL_QUADS, 0, 4)
         glBindVertexArray(0)
 
-    def move(self, x, y):
-
+    def move(self, vel_x, vel_y):
+        self.x += vel_x
+        self.y += vel_y
         glBindBuffer(GL_ARRAY_BUFFER, self.vbo[0])
-        x /= display[0]/2
-        y /= display[1]/2
-        self.pos_data[0] += x
-        self.pos_data[3] += x
-        self.pos_data[6] += x
-        self.pos_data[9] += x
-        self.pos_data[1] += y
-        self.pos_data[4] += y
-        self.pos_data[7] += y
-        self.pos_data[10] += y
+        vel_x = vel_x*2/display[0]
+        vel_y = vel_y*2/display[1]
+        self.pos_data[0] += vel_x
+        self.pos_data[3] += vel_x
+        self.pos_data[6] += vel_x
+        self.pos_data[9] += vel_x
+        self.pos_data[1] += vel_y
+        self.pos_data[4] += vel_y
+        self.pos_data[7] += vel_y
+        self.pos_data[10] += vel_y
         glBufferData(GL_ARRAY_BUFFER, self.pos_data.nbytes, self.pos_data, GL_DYNAMIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
+
+
 
 
 def quit_game():
@@ -143,23 +146,30 @@ def main():
 
     shader_compile()
 
-    rect = Rectangle(360, -360)
-    rect2 = Rectangle(-200, 200)
-    rect2.create_rectangle()
+    rect = Rectangle(360, 360)
+    #rect2 = Rectangle(-200, 200)
+    #rect2.create_rectangle()
     rect.create_rectangle()
 
     while True:
         pygame.time.delay(10)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glClearColor(1, 1, 1, 1)
+
+        # if rect.x
+
         if move_right is True:
             rect.move(5, 0)
+            print("X coord: ", rect.x, "Y coord: ", rect.y)
         if move_left is True:
             rect.move(-5, 0)
+            print("X coord: ", rect.x, "Y coord: ", rect.y)
         if move_up is True:
             rect.move(0, 5)
+            print("X coord: ", rect.x, "Y coord: ", rect.y)
         if move_down is True:
             rect.move(0, -5)
+            print("X coord: ", rect.x, "Y coord: ", rect.y)
         for event in pygame.event.get():
             if event.type == QUIT:
                 quit_game()
@@ -186,7 +196,7 @@ def main():
 
         glUseProgram(shader_program)
         rect.render_rectangle()
-        rect2.render_rectangle()
+        #rect2.render_rectangle()
         glUseProgram(0)
         pygame.display.flip()  # = glfw.swap_buffers(window)
 

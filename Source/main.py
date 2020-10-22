@@ -4,70 +4,104 @@ import numpy as np
 from OpenGL.GL import *
 from OpenGL.GL.shaders import compileShader, compileProgram
 from pygame.locals import *
-
+import glm
 display = (1280, 720)
 icon = ""
 name = "Test"
 timer = pygame.time.Clock()
+
 shader_program = None
-VAO = None
-VBO = None
+
 
 # Creating a vertex shader
 vertex_shader_code = """
 #version 330
 
 layout (location = 0) in vec3 pos;
+layout (location = 1) in vec3 color;
+
+out vec3 newColor;
 
 void main()
 {
     gl_Position = vec4(pos.x, pos.y, pos.z, 1.0);
+    newColor = color;
 }
 """
 
 fragment_shader_code = """
 #version 330
 
-out vec4 color;
+in vec3 newColor;
+out vec4 outColor;
 
 void main()
 {
-    color = vec4(1.0, 0.0, 0.0, 1.0);
+    outColor = vec4(newColor.x, newColor.y, newColor.z, 1.0);
 }
 """
 
 
 def shader_compile():
     global shader_program
-
     shader_program = compileProgram(compileShader(vertex_shader_code, GL_VERTEX_SHADER),
                                     compileShader(fragment_shader_code, GL_FRAGMENT_SHADER))
 
 
-def create_triangle():
-    global VAO
-    global VBO
-    vertices = [
-        -0.5, -0.5, 0.0,
-        0.5, -0.5, 0.0,
-        0.0, 0.5, 0.0
-    ]
-    vertices = np.array(vertices, dtype=np.float32)
+class Rectangle:
+    # vao = glGenVertexArrays(1)
+    def __init__(self, x, y, vao=None, vbo=None, size=1, pos_data=None, color_data=None):
+        self.x = x
+        self.y = y
+        self.size = size
+        self.vao = glGenVertexArrays(1)
+        self.vbo = glGenBuffers(2)
 
-    VAO = glGenVertexArrays(1)
-    glBindVertexArray(VAO)
+        mod_x = self.x/display[0]/2
+        mod_y = self.y/display[1]/2
 
-    VBO = glGenBuffers(1)
-    glBindBuffer(GL_ARRAY_BUFFER, VBO)
-    glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_STATIC_DRAW)
+        self.pos_data = [
+            -0.05+mod_x, -0.05+mod_y, 0,
+            0.05+mod_x, -0.05+mod_y, 0,
+            0.05+mod_x, 0.05+mod_y, 0,
+            -0.05+mod_x, 0.05+mod_y, 0
+        ]
+        self.pos_data = np.array(self.pos_data, dtype=np.float32)
+        self.pos_data = self.size * self.pos_data
 
-    position = glGetAttribLocation(shader_program, 'pos')
-    glVertexAttribPointer(position, 3, GL_FLOAT, GL_FALSE, 0, None)
-    glEnableVertexAttribArray(position)
+        self.color_data = [
+            1.0, 0.0, 0.0,
+            0.0, 1.0, 0.0,
+            0.0, 0.0, 1.0,
+            1.0, 0.0, 1.0
+        ]
+        self.color_data = np.array(self.color_data, dtype=np.float32)
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0)
+    def create_rectangle(self):
+        glBindVertexArray(self.vao)
 
-    glBindVertexArray(0)
+        # Position processing
+        glBindBuffer(GL_ARRAY_BUFFER, self.vbo[0])
+        glBufferData(GL_ARRAY_BUFFER, self.pos_data.nbytes, self.pos_data, GL_DYNAMIC_DRAW)
+
+        rectangle_pos = glGetAttribLocation(shader_program, 'pos')
+        glVertexAttribPointer(rectangle_pos, 3, GL_FLOAT, GL_FALSE, 0, None)
+        glEnableVertexAttribArray(0)
+        # Color processing
+        glBindBuffer(GL_ARRAY_BUFFER, self.vbo[1])
+        glBufferData(GL_ARRAY_BUFFER, self.color_data.nbytes, self.color_data, GL_STATIC_DRAW)
+
+        rectangle_color = glGetAttribLocation(shader_program, 'color')
+        glVertexAttribPointer(rectangle_color, 3, GL_FLOAT, GL_FALSE, 0, None)
+        glEnableVertexAttribArray(1)
+        glDrawArrays(GL_QUADS, 0, 4)
+        glBindBuffer(GL_ARRAY_BUFFER, 0)
+        glBindVertexArray(0)
+
+    def render_rectangle(self):
+        glBindVertexArray(self.vao)
+        glDrawArrays(GL_QUADS, 0, 4)
+        glBindVertexArray(0)
 
 
 def quit_game():
@@ -80,16 +114,21 @@ def main():
     pygame.init()
     while not pygame.get_init():
         print("PyGame Initialization Failed.")
-    game_window = pygame.display.set_mode(display, DOUBLEBUF | OPENGL | pygame.RESIZABLE)  # Set game width and height
+    pygame.display.set_mode(display, DOUBLEBUF | OPENGL | pygame.RESIZABLE)  # Set game width and height
     pygame.display.set_caption(name)  # Set game title
     # _icon = pygame.image.load(icon)  # Load icon
     # pygame.display.set_icon(_icon)  # Set game icon
     # glViewport(0, 0, display[0], display[1])
 
     shader_compile()
-    create_triangle()
+
+    rect = Rectangle(360, -360)
+    rect2 = Rectangle(-200, 200)
+    rect2.create_rectangle()
+    rect.create_rectangle()
 
     while True:
+        pygame.time.delay(100)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glClearColor(1, 1, 1, 1)
         for event in pygame.event.get():
@@ -97,17 +136,15 @@ def main():
                 quit_game()
             if event.type == VIDEORESIZE:
                 glViewport(0, 0, event.w, event.h)
-        glUseProgram(shader_program)
-        glBindVertexArray(VAO)
-        glDrawArrays(GL_TRIANGLES, 0, 3)
-        glUseProgram(0)
-        glBindVertexArray(0)
 
+        glUseProgram(shader_program)
+        rect.render_rectangle()
+        rect2.render_rectangle()
+        glUseProgram(0)
         pygame.display.flip()  # = glfw.swap_buffers(window)
 
 
 if __name__ == '__main__':
-
     main()
 
 pygame.quit()

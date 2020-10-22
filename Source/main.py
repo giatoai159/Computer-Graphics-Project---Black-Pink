@@ -94,7 +94,7 @@ class Rectangle:
         rectangle_color = glGetAttribLocation(shader_program, 'color')
         glVertexAttribPointer(rectangle_color, 3, GL_FLOAT, GL_FALSE, 0, None)
         glEnableVertexAttribArray(1)
-        glDrawArrays(GL_QUADS, 0, 4)
+
         glBindBuffer(GL_ARRAY_BUFFER, 0)
         glBindVertexArray(0)
 
@@ -102,6 +102,22 @@ class Rectangle:
         glBindVertexArray(self.vao)
         glDrawArrays(GL_QUADS, 0, 4)
         glBindVertexArray(0)
+
+    def move(self, x, y):
+
+        glBindBuffer(GL_ARRAY_BUFFER, self.vbo[0])
+        x /= display[0]/2
+        y /= display[1]/2
+        self.pos_data[0] += x
+        self.pos_data[3] += x
+        self.pos_data[6] += x
+        self.pos_data[9] += x
+        self.pos_data[1] += y
+        self.pos_data[4] += y
+        self.pos_data[7] += y
+        self.pos_data[10] += y
+        glBufferData(GL_ARRAY_BUFFER, self.pos_data.nbytes, self.pos_data, GL_DYNAMIC_DRAW)
+        glBindBuffer(GL_ARRAY_BUFFER, 0)
 
 
 def quit_game():
@@ -120,6 +136,11 @@ def main():
     # pygame.display.set_icon(_icon)  # Set game icon
     # glViewport(0, 0, display[0], display[1])
 
+    move_right = False
+    move_left = False
+    move_up = False
+    move_down = False
+
     shader_compile()
 
     rect = Rectangle(360, -360)
@@ -128,14 +149,40 @@ def main():
     rect.create_rectangle()
 
     while True:
-        pygame.time.delay(100)
+        pygame.time.delay(10)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glClearColor(1, 1, 1, 1)
+        if move_right is True:
+            rect.move(5, 0)
+        if move_left is True:
+            rect.move(-5, 0)
+        if move_up is True:
+            rect.move(0, 5)
+        if move_down is True:
+            rect.move(0, -5)
         for event in pygame.event.get():
             if event.type == QUIT:
                 quit_game()
             if event.type == VIDEORESIZE:
                 glViewport(0, 0, event.w, event.h)
+            if event.type == KEYDOWN:
+                if event.key == K_RIGHT:
+                    move_right = True
+                if event.key == K_LEFT:
+                    move_left = True
+                if event.key == K_UP:
+                    move_up = True
+                if event.key == K_DOWN:
+                    move_down = True
+            if event.type == KEYUP:
+                if event.key == K_RIGHT:
+                    move_right = False
+                if event.key == K_LEFT:
+                    move_left = False
+                if event.key == K_UP:
+                    move_up = False
+                if event.key == K_DOWN:
+                    move_down = False
 
         glUseProgram(shader_program)
         rect.render_rectangle()

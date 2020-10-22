@@ -48,7 +48,7 @@ def shader_compile():
                                     compileShader(fragment_shader_code, GL_FRAGMENT_SHADER))
 
 
-class Rectangle:
+class Player:
     # vao = glGenVertexArrays(1)
     def __init__(self, x, y, size=1):
         self.x = x
@@ -80,28 +80,28 @@ class Rectangle:
         ]
         self.color_data = np.array(self.color_data, dtype=np.float32)
 
-    def create_rectangle(self):
+    def create_player(self):
         glBindVertexArray(self.vao)
 
         # Position processing
         glBindBuffer(GL_ARRAY_BUFFER, self.vbo[0])
         glBufferData(GL_ARRAY_BUFFER, self.pos_data.nbytes, self.pos_data, GL_DYNAMIC_DRAW)
 
-        rectangle_pos = glGetAttribLocation(shader_program, 'pos')
-        glVertexAttribPointer(rectangle_pos, 3, GL_FLOAT, GL_FALSE, 0, None)
+        player_pos = glGetAttribLocation(shader_program, 'pos')
+        glVertexAttribPointer(player_pos, 3, GL_FLOAT, GL_FALSE, 0, None)
         glEnableVertexAttribArray(0)
         # Color processing
         glBindBuffer(GL_ARRAY_BUFFER, self.vbo[1])
         glBufferData(GL_ARRAY_BUFFER, self.color_data.nbytes, self.color_data, GL_STATIC_DRAW)
 
-        rectangle_color = glGetAttribLocation(shader_program, 'color')
-        glVertexAttribPointer(rectangle_color, 3, GL_FLOAT, GL_FALSE, 0, None)
+        player_color = glGetAttribLocation(shader_program, 'color')
+        glVertexAttribPointer(player_color, 3, GL_FLOAT, GL_FALSE, 0, None)
         glEnableVertexAttribArray(1)
 
         glBindBuffer(GL_ARRAY_BUFFER, 0)
         glBindVertexArray(0)
 
-    def render_rectangle(self):
+    def render_player(self):
         glBindVertexArray(self.vao)
         glDrawArrays(GL_QUADS, 0, 4)
         glBindVertexArray(0)
@@ -143,31 +143,31 @@ def main():
     # Game variables
     shader_compile()
 
-    rect = Rectangle(500, -340)
-    rect.create_rectangle()
+    player = Player(500, -340)
+    player.create_player()
 
     while True:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glClearColor(1, 1, 1, 1)
         keys = pygame.key.get_pressed()
-        if keys[K_RIGHT] and rect.x < (display[0]/2)-20:
-            rect.move(rect.velocity, 0)
-        if keys[K_LEFT] and rect.x > -((display[0]/2)-20):
-            rect.move(-rect.velocity, 0)
-        if not rect.is_jump:
+        if keys[K_RIGHT] and player.x < (display[0]/2)-20:
+            player.move(player.velocity, 0)
+        if keys[K_LEFT] and player.x > -((display[0]/2)-20):
+            player.move(-player.velocity, 0)
+        if not player.is_jump:
 
             if keys[K_SPACE] or keys[K_UP]:
-                rect.is_jump = True
+                player.is_jump = True
         else:
-            if rect.jump_count >= -10:
+            if player.jump_count >= -10:
                 neg = 1
-                if rect.jump_count < 0:
+                if player.jump_count < 0:
                     neg = -1
-                rect.move(0, (rect.jump_count**2)*0.5*neg)
-                rect.jump_count -= 1
+                player.move(0, (player.jump_count**2)*0.5*neg)
+                player.jump_count -= 1
             else:
-                rect.is_jump = False
-                rect.jump_count = 10
+                player.is_jump = False
+                player.jump_count = 10
 
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -176,7 +176,7 @@ def main():
                 glViewport(0, 0, event.w, event.h)
 
         glUseProgram(shader_program)
-        rect.render_rectangle()
+        player.render_player()
         glUseProgram(0)
         pygame.display.flip()  # = glfw.swap_buffers(window)
         timer.tick(60)

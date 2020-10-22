@@ -61,10 +61,10 @@ class Rectangle:
         mod_y = self.y*2/display[1]
 
         self.pos_data = [
-            -0.05+mod_x, -0.05+mod_y, 0,
-            0.05+mod_x, -0.05+mod_y, 0,
-            0.05+mod_x, 0.05+mod_y, 0,
-            -0.05+mod_x, 0.05+mod_y, 0
+            -0.027+mod_x, -0.05+mod_y, 0,
+            0.027+mod_x, -0.05+mod_y, 0,
+            0.027+mod_x, 0.05+mod_y, 0,
+            -0.027+mod_x, 0.05+mod_y, 0
         ]
         self.pos_data = np.array(self.pos_data, dtype=np.float32)
         self.pos_data = self.size * self.pos_data
@@ -121,8 +121,6 @@ class Rectangle:
         glBindBuffer(GL_ARRAY_BUFFER, 0)
 
 
-
-
 def quit_game():
     pygame.quit()
     sys.exit()
@@ -137,68 +135,51 @@ def main():
     pygame.display.set_caption(name)  # Set game title
     # _icon = pygame.image.load(icon)  # Load icon
     # pygame.display.set_icon(_icon)  # Set game icon
-    # glViewport(0, 0, display[0], display[1])
+    glViewport(0, 0, display[0], display[1])
 
-    move_right = False
-    move_left = False
-    move_up = False
-    move_down = False
-
+    # Game variables
+    x_velocity = 10
+    is_jump = False
+    jump_count = 10
     shader_compile()
 
-    rect = Rectangle(360, 360)
-    #rect2 = Rectangle(-200, 200)
-    #rect2.create_rectangle()
+    rect = Rectangle(500, -340)
     rect.create_rectangle()
 
     while True:
-        pygame.time.delay(10)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glClearColor(1, 1, 1, 1)
+        keys = pygame.key.get_pressed()
+        if keys[K_RIGHT] and rect.x < (display[0]/2)-20:
+            rect.move(x_velocity, 0)
+        if keys[K_LEFT] and rect.x > -((display[0]/2)-20):
+            rect.move(-x_velocity, 0)
+        if not is_jump:
 
-        # if rect.x
+            if keys[K_SPACE] or keys[K_UP]:
+                is_jump = True
+        else:
+            if jump_count >= -10:
+                neg = 1
+                if jump_count < 0:
+                    neg = -1
+                rect.move(0, (jump_count**2)*0.5*neg)
+                jump_count -= 1
+            else:
+                is_jump = False
+                jump_count = 10
 
-        if move_right is True:
-            rect.move(5, 0)
-            print("X coord: ", rect.x, "Y coord: ", rect.y)
-        if move_left is True:
-            rect.move(-5, 0)
-            print("X coord: ", rect.x, "Y coord: ", rect.y)
-        if move_up is True:
-            rect.move(0, 5)
-            print("X coord: ", rect.x, "Y coord: ", rect.y)
-        if move_down is True:
-            rect.move(0, -5)
-            print("X coord: ", rect.x, "Y coord: ", rect.y)
         for event in pygame.event.get():
             if event.type == QUIT:
                 quit_game()
             if event.type == VIDEORESIZE:
                 glViewport(0, 0, event.w, event.h)
-            if event.type == KEYDOWN:
-                if event.key == K_RIGHT:
-                    move_right = True
-                if event.key == K_LEFT:
-                    move_left = True
-                if event.key == K_UP:
-                    move_up = True
-                if event.key == K_DOWN:
-                    move_down = True
-            if event.type == KEYUP:
-                if event.key == K_RIGHT:
-                    move_right = False
-                if event.key == K_LEFT:
-                    move_left = False
-                if event.key == K_UP:
-                    move_up = False
-                if event.key == K_DOWN:
-                    move_down = False
 
         glUseProgram(shader_program)
         rect.render_rectangle()
-        #rect2.render_rectangle()
         glUseProgram(0)
         pygame.display.flip()  # = glfw.swap_buffers(window)
+        timer.tick(60)
 
 
 if __name__ == '__main__':

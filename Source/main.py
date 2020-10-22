@@ -50,9 +50,12 @@ def shader_compile():
 
 class Rectangle:
     # vao = glGenVertexArrays(1)
-    def __init__(self, x, y, vao=None, vbo=None, size=1, pos_data=None, color_data=None):
+    def __init__(self, x, y, size=1):
         self.x = x
         self.y = y
+        self.velocity = 10
+        self.is_jump = False
+        self.jump_count = 10
         self.size = size
         self.vao = glGenVertexArrays(1)
         self.vbo = glGenBuffers(2)
@@ -138,9 +141,6 @@ def main():
     glViewport(0, 0, display[0], display[1])
 
     # Game variables
-    x_velocity = 10
-    is_jump = False
-    jump_count = 10
     shader_compile()
 
     rect = Rectangle(500, -340)
@@ -151,23 +151,23 @@ def main():
         glClearColor(1, 1, 1, 1)
         keys = pygame.key.get_pressed()
         if keys[K_RIGHT] and rect.x < (display[0]/2)-20:
-            rect.move(x_velocity, 0)
+            rect.move(rect.velocity, 0)
         if keys[K_LEFT] and rect.x > -((display[0]/2)-20):
-            rect.move(-x_velocity, 0)
-        if not is_jump:
+            rect.move(-rect.velocity, 0)
+        if not rect.is_jump:
 
             if keys[K_SPACE] or keys[K_UP]:
-                is_jump = True
+                rect.is_jump = True
         else:
-            if jump_count >= -10:
+            if rect.jump_count >= -10:
                 neg = 1
-                if jump_count < 0:
+                if rect.jump_count < 0:
                     neg = -1
-                rect.move(0, (jump_count**2)*0.5*neg)
-                jump_count -= 1
+                rect.move(0, (rect.jump_count**2)*0.5*neg)
+                rect.jump_count -= 1
             else:
-                is_jump = False
-                jump_count = 10
+                rect.is_jump = False
+                rect.jump_count = 10
 
         for event in pygame.event.get():
             if event.type == QUIT:

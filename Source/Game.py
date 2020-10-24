@@ -67,6 +67,8 @@ class Game:
                     self.is_running = False
                 if event.type == VIDEORESIZE:
                     glViewport(0, 0, event.w, event.h)
+            mouse = pygame.mouse.get_pos()
+            # print(mouse[0]-640, mouse[1]-360) # Print mouse position with OpenGL Oxy base (0, 0)
             player.jump_handling()
             glUseProgram(shader_program)
             player.render_player()
@@ -75,6 +77,7 @@ class Game:
             self.timer.tick(60)
         pygame.quit()
         sys.exit()
+
 
 class Player:
     # vao = glGenVertexArrays(1)
@@ -175,3 +178,7 @@ class Player:
             else:
                 self.is_jump = False
                 self.jump_count = self.base_gravity
+
+
+#class Block:
+    #def __init__(self, x, y, size, width, height):

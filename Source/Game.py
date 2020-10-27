@@ -1,4 +1,5 @@
 from packages import *
+
 shader_program = None
 
 display = [1280, 720]
@@ -58,7 +59,7 @@ class Game:
 
     def loop(self):
         player = Player(0, 0, 50, 50)
-        player.create_player()
+        platform_1 = Platform(250, 0, 350, 600)
         while self.is_running:
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
             glClearColor(1, 1, 1, 1)
@@ -69,9 +70,13 @@ class Game:
                     glViewport(0, 0, event.w, event.h)
             mouse = pygame.mouse.get_pos()
             # print(mouse[0]-640, mouse[1]-360) # Print mouse position with OpenGL Oxy base (0, 0)
-            player.jump_handling()
+            player.move_handling(check_collision(player, platform_1))
+            print("Colliding: ", check_collision(player, platform_1))
             glUseProgram(shader_program)
+
+            platform_1.render_platform()
             player.render_player()
+
             glUseProgram(0)
             pygame.display.flip()
             self.timer.tick(60)
@@ -80,7 +85,6 @@ class Game:
 
 
 class Player:
-    # vao = glGenVertexArrays(1)
     def __init__(self, x, y, width, height):
         self.x = x
         self.y = y
@@ -94,21 +98,18 @@ class Player:
         self.vao = glGenVertexArrays(1)
         self.vbo = glGenBuffers(2)
 
-        mod_x = self.x*2/display[0]
-        mod_y = self.y*2/display[1]
-        mod_width = self.width/display[0]
-        mod_height = self.height/display[1]
+        mod_x = self.x * 2 / display[0]
+        mod_y = self.y * 2 / display[1]
+        mod_width = self.width / display[0]
+        mod_height = self.height / display[1]
 
         self.pos_data = [
-            -mod_width+mod_x, -mod_height+mod_y, 0,
-            mod_width+mod_x, -mod_height+mod_y, 0,
-            mod_width+mod_x, mod_height+mod_y, 0,
-            -mod_width+mod_x, mod_height+mod_y, 0
+            -mod_width + mod_x, -mod_height + mod_y, 0,
+            mod_width + mod_x, -mod_height + mod_y, 0,
+            mod_width + mod_x, mod_height + mod_y, 0,
+            -mod_width + mod_x, mod_height + mod_y, 0
         ]
         self.pos_data = np.array(self.pos_data, dtype=np.float32)
-
-        self.width = self.pos_data[3]*display[0]
-        self.height = self.pos_data[7]*display[1]
 
         self.color_data = [
             1.0, 0.0, 0.0,
@@ -118,7 +119,6 @@ class Player:
         ]
         self.color_data = np.array(self.color_data, dtype=np.float32)
 
-    def create_player(self):
         glBindVertexArray(self.vao)
 
         # Position processing
@@ -147,26 +147,29 @@ class Player:
     def move(self, vel_x, vel_y):
         self.x += vel_x
         self.y += vel_y
+        vel_x = vel_x * 2 / display[0]
+        vel_y = vel_y * 2 / display[1]
         glBindBuffer(GL_ARRAY_BUFFER, self.vbo[0])
-        vel_x = vel_x*2/display[0]
-        vel_y = vel_y*2/display[1]
-        self.pos_data[0] += vel_x
-        self.pos_data[3] += vel_x
-        self.pos_data[6] += vel_x
-        self.pos_data[9] += vel_x
-        self.pos_data[1] += vel_y
-        self.pos_data[4] += vel_y
-        self.pos_data[7] += vel_y
-        self.pos_data[10] += vel_y
+        if vel_x != 0:
+            self.pos_data[0] += vel_x
+            self.pos_data[3] += vel_x
+            self.pos_data[6] += vel_x
+            self.pos_data[9] += vel_x
+        if vel_y != 0:
+            self.pos_data[1] += vel_y
+            self.pos_data[4] += vel_y
+            self.pos_data[7] += vel_y
+            self.pos_data[10] += vel_y
         glBufferData(GL_ARRAY_BUFFER, self.pos_data.nbytes, self.pos_data, GL_DYNAMIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
 
-    def jump_handling(self):
+    def move_handling(self, hit_list):
         keys = pygame.key.get_pressed()
-        if keys[K_RIGHT] and self.x < (display[0] / 2) - self.width/2:
+        if keys[K_RIGHT] and self.x < (display[0] / 2) - self.width / 2:
             self.move(self.velocity, 0)
-        if keys[K_LEFT] and self.x > -((display[0] / 2) - self.width/2):
+        if keys[K_LEFT] and self.x > -((display[0] / 2) - self.width / 2):
             self.move(-self.velocity, 0)
+
         if not self.is_jump:
 
             if keys[K_SPACE] or keys[K_UP]:
@@ -183,5 +186,66 @@ class Player:
                 self.jump_count = self.base_gravity
 
 
-#class Block:
-    #def __init__(self, x, y, width, height):
+class Platform:
+    def __init__(self, x, y, width, height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+
+        self.vao = glGenVertexArrays(1)
+        self.vbo = glGenBuffers(2)
+
+        mod_x = self.x * 2 / display[0]
+        mod_y = self.y * 2 / display[1]
+        mod_width = self.width / display[0]
+        mod_height = self.height / display[1]
+
+        self.pos_data = [
+            -mod_width + mod_x, -mod_height + mod_y, 0,
+            mod_width + mod_x, -mod_height + mod_y, 0,
+            mod_width + mod_x, mod_height + mod_y, 0,
+            -mod_width + mod_x, mod_height + mod_y, 0
+        ]
+        self.pos_data = np.array(self.pos_data, dtype=np.float32)
+
+        self.color_data = [
+            1.0, 0.0, 0.0,
+            0.0, 1.0, 0.0,
+            0.0, 0.0, 1.0,
+            1.0, 0.0, 1.0
+        ]
+        self.color_data = np.array(self.color_data, dtype=np.float32)
+
+        glBindVertexArray(self.vao)
+
+        # Position processing
+        glBindBuffer(GL_ARRAY_BUFFER, self.vbo[0])
+        glBufferData(GL_ARRAY_BUFFER, self.pos_data.nbytes, self.pos_data, GL_DYNAMIC_DRAW)
+
+        platform_pos = glGetAttribLocation(shader_program, 'pos')
+        glVertexAttribPointer(platform_pos, 3, GL_FLOAT, GL_FALSE, 0, None)
+        glEnableVertexAttribArray(0)
+        # Color processing
+        glBindBuffer(GL_ARRAY_BUFFER, self.vbo[1])
+        glBufferData(GL_ARRAY_BUFFER, self.color_data.nbytes, self.color_data, GL_STATIC_DRAW)
+
+        platform_color = glGetAttribLocation(shader_program, 'color')
+        glVertexAttribPointer(platform_color, 3, GL_FLOAT, GL_FALSE, 0, None)
+        glEnableVertexAttribArray(1)
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0)
+        glBindVertexArray(0)
+
+    def render_platform(self):
+        glBindVertexArray(self.vao)
+        glDrawArrays(GL_QUADS, 0, 4)
+        glBindVertexArray(0)
+
+
+def check_collision(player, collided_object):
+    collision_x = player.x + player.width / 2 >= collided_object.x - collided_object.width / 2 and collided_object.x + collided_object.width / 2 >= player.x - player.width / 2
+    collision_y = player.y + player.height / 2 >= collided_object.y - collided_object.height / 2 and collided_object.y + collided_object.height / 2 >= player.y - player.height / 2
+    return collision_x and collision_y
+
+

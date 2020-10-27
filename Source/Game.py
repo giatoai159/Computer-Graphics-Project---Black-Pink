@@ -57,7 +57,7 @@ class Game:
         shader_compile()
 
     def loop(self):
-        player = Player(0, 0, 2)
+        player = Player(0, 0, 50, 50)
         player.create_player()
         while self.is_running:
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -81,28 +81,31 @@ class Game:
 
 class Player:
     # vao = glGenVertexArrays(1)
-    def __init__(self, x, y, size=1):
+    def __init__(self, x, y, width, height):
         self.x = x
         self.y = y
+        self.width = width
+        self.height = height
         self.velocity = 10
         self.is_jump = False
-        self.base_gravity = 10 + size
+        self.base_gravity = 10
         self.jump_count = self.base_gravity
-        self.size = size
+
         self.vao = glGenVertexArrays(1)
         self.vbo = glGenBuffers(2)
 
         mod_x = self.x*2/display[0]
         mod_y = self.y*2/display[1]
+        mod_width = self.width/display[0]
+        mod_height = self.height/display[1]
 
         self.pos_data = [
-            -0.027+mod_x, -0.05+mod_y, 0,
-            0.027+mod_x, -0.05+mod_y, 0,
-            0.027+mod_x, 0.05+mod_y, 0,
-            -0.027+mod_x, 0.05+mod_y, 0
+            -mod_width+mod_x, -mod_height+mod_y, 0,
+            mod_width+mod_x, -mod_height+mod_y, 0,
+            mod_width+mod_x, mod_height+mod_y, 0,
+            -mod_width+mod_x, mod_height+mod_y, 0
         ]
         self.pos_data = np.array(self.pos_data, dtype=np.float32)
-        self.pos_data = self.size * self.pos_data
 
         self.width = self.pos_data[3]*display[0]
         self.height = self.pos_data[7]*display[1]
@@ -181,4 +184,4 @@ class Player:
 
 
 #class Block:
-    #def __init__(self, x, y, size, width, height):
+    #def __init__(self, x, y, width, height):

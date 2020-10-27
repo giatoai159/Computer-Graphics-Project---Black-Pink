@@ -172,7 +172,7 @@ class Player:
 
         if not self.is_jump:
 
-            if keys[K_SPACE] or keys[K_UP]:
+            if keys[K_UP]:
                 self.is_jump = True
         else:
             if self.jump_count >= -self.base_gravity:

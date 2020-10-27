@@ -58,8 +58,8 @@ class Game:
         shader_compile()
 
     def loop(self):
-        player = Player(0, 0, 50, 50)
-        platform_1 = Platform(250, 0, 350, 600)
+        player = Player(-615, -335, 50, 50)
+        platform_1 = Platform(-200, -325, 300, 70)
         while self.is_running:
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
             glClearColor(1, 1, 1, 1)
@@ -70,7 +70,7 @@ class Game:
                     glViewport(0, 0, event.w, event.h)
             mouse = pygame.mouse.get_pos()
             # print(mouse[0]-640, mouse[1]-360) # Print mouse position with OpenGL Oxy base (0, 0)
-            player.move_handling(check_collision(player, platform_1))
+            player.move_handling()
             print("Colliding: ", check_collision(player, platform_1))
             glUseProgram(shader_program)
 
@@ -163,7 +163,7 @@ class Player:
         glBufferData(GL_ARRAY_BUFFER, self.pos_data.nbytes, self.pos_data, GL_DYNAMIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
 
-    def move_handling(self, hit_list):
+    def move_handling(self):
         keys = pygame.key.get_pressed()
         if keys[K_RIGHT] and self.x < (display[0] / 2) - self.width / 2:
             self.move(self.velocity, 0)

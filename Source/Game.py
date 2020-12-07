@@ -4,37 +4,20 @@ shader_program = None
 
 display = [1280, 720]
 # Creating a vertex shader
-vertex_shader_code = """
-#version 330
 
-layout (location = 0) in vec3 pos;
-layout (location = 1) in vec3 color;
-
-out vec3 newColor;
-
-void main()
-{
-    gl_Position = vec4(pos.x, pos.y, pos.z, 1.0);
-    newColor = color;
-}
-"""
-fragment_shader_code = """
-#version 330
-
-in vec3 newColor;
-out vec4 outColor;
-
-void main()
-{
-    outColor = vec4(newColor.x, newColor.y, newColor.z, 1.0);
-}
-"""
+vertex_shader_code = open("Shaders/simple_vertex_shader.txt", "r")
+fragment_shader_code = open("Shaders/simple_fragment_shader.txt", "r")
+test_shader_code = open("Shaders/test.txt", "r")
 
 
 def shader_compile():
     global shader_program
-    shader_program = compileProgram(compileShader(vertex_shader_code, GL_VERTEX_SHADER),
-                                    compileShader(fragment_shader_code, GL_FRAGMENT_SHADER))
+    shader_program = compileProgram(compileShader(vertex_shader_code.read(), GL_VERTEX_SHADER),
+                                    compileShader(fragment_shader_code.read(), GL_FRAGMENT_SHADER))
+    t = compileShader(test_shader_code.read(),GL_FRAGMENT_SHADER)
+    glAttachShader(shader_program, t)
+    glDetachShader(shader_program, t)
+
 
 
 class Game:
@@ -125,14 +108,15 @@ class Player:
         glBindBuffer(GL_ARRAY_BUFFER, self.vbo[0])
         glBufferData(GL_ARRAY_BUFFER, self.pos_data.nbytes, self.pos_data, GL_DYNAMIC_DRAW)
 
-        player_pos = glGetAttribLocation(shader_program, 'pos')
+        player_pos = glGetAttribLocation(shader_program, 'aPos')
         glVertexAttribPointer(player_pos, 3, GL_FLOAT, GL_FALSE, 0, None)
         glEnableVertexAttribArray(0)
         # Color processing
+
         glBindBuffer(GL_ARRAY_BUFFER, self.vbo[1])
         glBufferData(GL_ARRAY_BUFFER, self.color_data.nbytes, self.color_data, GL_STATIC_DRAW)
 
-        player_color = glGetAttribLocation(shader_program, 'color')
+        player_color = glGetAttribLocation(shader_program, 'aColor')
         glVertexAttribPointer(player_color, 3, GL_FLOAT, GL_FALSE, 0, None)
         glEnableVertexAttribArray(1)
 
@@ -169,7 +153,11 @@ class Player:
             self.move(self.velocity, 0)
         if keys[K_LEFT] and self.x > -((display[0] / 2) - self.width / 2):
             self.move(-self.velocity, 0)
-
+        if keys[K_UP] and self.y < ((display[1] / 2) - self.width / 2):
+            self.move(0, self.velocity)
+        if keys[K_DOWN] and self.y > -((display[1] / 2) - self.width / 2):
+            self.move(0, -self.velocity)
+        """
         if not self.is_jump:
 
             if keys[K_UP]:
@@ -184,7 +172,7 @@ class Player:
             else:
                 self.is_jump = False
                 self.jump_count = self.base_gravity
-
+        """
 
 class Platform:
     def __init__(self, x, y, width, height):
@@ -223,14 +211,17 @@ class Platform:
         glBindBuffer(GL_ARRAY_BUFFER, self.vbo[0])
         glBufferData(GL_ARRAY_BUFFER, self.pos_data.nbytes, self.pos_data, GL_DYNAMIC_DRAW)
 
-        platform_pos = glGetAttribLocation(shader_program, 'pos')
+        platform_pos = glGetAttribLocation(shader_program, 'aPos')
         glVertexAttribPointer(platform_pos, 3, GL_FLOAT, GL_FALSE, 0, None)
         glEnableVertexAttribArray(0)
+
         # Color processing
+
+
         glBindBuffer(GL_ARRAY_BUFFER, self.vbo[1])
         glBufferData(GL_ARRAY_BUFFER, self.color_data.nbytes, self.color_data, GL_STATIC_DRAW)
 
-        platform_color = glGetAttribLocation(shader_program, 'color')
+        platform_color = glGetAttribLocation(shader_program, 'aColor')
         glVertexAttribPointer(platform_color, 3, GL_FLOAT, GL_FALSE, 0, None)
         glEnableVertexAttribArray(1)
 

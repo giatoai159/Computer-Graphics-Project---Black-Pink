@@ -1,9 +1,9 @@
-from packages import *
-from Game import *
+import pygame
+from Game import Game
+
 
 def main():
     game = Game("Test")
-    game.start()
     game.loop()
 
 

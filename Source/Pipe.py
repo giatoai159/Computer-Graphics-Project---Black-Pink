@@ -1,3 +1,4 @@
+import pygame
 from Globals import *
 from OpenGL.GL import *
 import numpy as np
@@ -11,13 +12,16 @@ class Pipe:
         # Pipe size
         self.width = width
         self.height = height
+        self.is_upside_down = is_upside_down
         mod_x = self.x * 2 / display[0]
         mod_y = self.y * 2 / display[1]
         mod_width = self.width / display[0]
         mod_height = self.height / display[1]
+
         self.image = pygame.image.load("Textures/pipe.png")
         # Background position data
-        if is_upside_down is True:
+        if self.is_upside_down is True:
+            self.y = self.y + pipe_gap
             self.pos_data = [
                 -mod_width + mod_x, -mod_height + mod_y + pipe_gap*2/display[1], 0,  # Bottom left
                 mod_width + mod_x, -mod_height + mod_y + pipe_gap*2/display[1], 0,  # Bottom right
@@ -25,6 +29,7 @@ class Pipe:
                 -mod_width + mod_x, mod_height + mod_y + pipe_gap*2/display[1], 0  # Top left
             ]
         else:
+            self.y = self.y - pipe_gap
             self.pos_data = [
                 -mod_width + mod_x, -mod_height + mod_y - pipe_gap*2/display[1], 0,  # Bottom left
                 mod_width + mod_x, -mod_height + mod_y - pipe_gap*2/display[1], 0,  # Bottom right
@@ -33,7 +38,7 @@ class Pipe:
             ]
         self.pos_data = np.array(self.pos_data, dtype=np.float32)
         # Background self.texture data
-        if is_upside_down is True:
+        if self.is_upside_down is True:
             self.tex_coord_data = [
                 0.0, 1.0,  # Bottom left
                 1.0, 1.0,  # Bottom right
@@ -109,3 +114,4 @@ class Pipe:
         scroll_speed = 4
         ground_scroll -= scroll_speed
         self.move(ground_scroll)
+

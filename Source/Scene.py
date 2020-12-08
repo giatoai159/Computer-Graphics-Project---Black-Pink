@@ -1,3 +1,4 @@
+import pygame
 from OpenGL.GL import *
 import numpy as np
 from Globals import *

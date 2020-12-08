@@ -1,6 +1,6 @@
 import Shaders.load as shader
 import random
-import numpy as np
+import pygame
 from OpenGL.GL import *
 from pygame.locals import *
 from Globals import *
@@ -28,8 +28,8 @@ class Game:
         glViewport(0, 0, display[0], display[1])
         # pygame.display.set_icon(pygame.image.load(self.icon))
         glMatrixMode(GL_MODELVIEW)
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         glClearColor(1, 1, 1, 1)
         shader.compile_shader()
 
@@ -38,16 +38,19 @@ class Game:
         bg = Scene("Textures/bg.png", 0, 100, 864, 768)
         ground = Scene("Textures/ground.png", 0, -368, 900, 168)
         pipe_group = []
-        pipe_group.append(Pipe(0, 0, 78, 568, True))
-        pipe_group.append(Pipe(0, 0, 78, 568, False))
         last_pipe = pygame.time.get_ticks() - pipe_frequency
         # platform_1 = Platform(-200, -325, 300, 70)
         while self.is_running:
             self.timer.tick(fps)
             # glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
             glUseProgram(shader.program)
-            # test
+            # Check collision
+            for i in range(0, len(pipe_group)):
+                if check_collision(player, pipe_group[i]):
+                    self.game_over = True
 
+            if player.y > 425:
+                self.game_over = True
             # Check if bird hit ground
             if player.y < -270:
                 self.game_over = True
@@ -56,18 +59,24 @@ class Game:
             if self.flying is True and self.game_over is False:
                 time_now = pygame.time.get_ticks()
                 if time_now - last_pipe > pipe_frequency:
-                    pipe_height = random.randint(-100, 100)
+                    pipe_height = random.randint(-150, 150)
                     btm_pipe = Pipe(display[0], pipe_height, 78, 568, False)
                     top_pipe = Pipe(display[0], pipe_height, 78, 568, True)
                     pipe_group.append(btm_pipe)
                     pipe_group.append(top_pipe)
                     last_pipe = time_now
+
+                if pipe_group[0].x < -350:
+                    pipe_group.pop(0)
+
                 for i in range(0, len(pipe_group)):
                     pipe_group[i].scrolling()
+
                 # Scrolling the ground
                 ground.scrolling()
-                # Bird movement handling
-                player.move_handling(self.flying, self.game_over)
+
+            # Bird movement handling
+            player.move_handling(self.flying, self.game_over)
 
             for event in pygame.event.get():
                 if event.type == QUIT:
@@ -90,9 +99,13 @@ class Game:
 
 
 def check_collision(player, collided_object):
-    collision_x = player.x + player.width / 2 >= collided_object.x - collided_object.width / 2 and collided_object.x + collided_object.width / 2 >= player.x - player.width / 2
-    collision_y = player.y + player.height / 2 >= collided_object.y - collided_object.height / 2 and collided_object.y + collided_object.height / 2 >= player.y - player.height / 2
+    collision_x = player.x + player.width / 2 >= collided_object.x + leeway - collided_object.width / 2 and \
+                  collided_object.x - leeway + collided_object.width / 2 >= player.x - player.width / 2
+    collision_y = player.y + player.height / 2 >= collided_object.y + leeway - collided_object.height / 2 and \
+                  collided_object.y - leeway + collided_object.height / 2 >= player.y - player.height / 2
     return collision_x and collision_y
+
+
 """
 class Platform:
     def __init__(self, x, y, width, height):
@@ -153,6 +166,3 @@ class Platform:
         glBindVertexArray(0)
 
 """
-
-
-

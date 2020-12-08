@@ -1,5 +1,3 @@
-import pygame
-
 display = [650, 850]
 # Vertex shader
 vertex_shader_code = open("Shaders/simple_vertex_shader.txt", "r")
@@ -13,7 +11,8 @@ gravity_speed = 0.5
 
 jump_height = 13
 
-pipe_gap = 380
+leeway = 10
+pipe_gap = 400
 pipe_frequency = 1500 # milliseconds
 
 

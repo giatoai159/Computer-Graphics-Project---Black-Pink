@@ -1,5 +1,6 @@
 import numpy as np
-import glm
+import pygame
+# import glm
 from OpenGL.GL import *
 from Globals import *
 from pygame.locals import *
@@ -18,7 +19,7 @@ class Player:
         self.is_jump = False
         self.velocity = 0
         self.counter = 0
-        self.transform = glm.mat4(1.0)
+        # self.transform = glm.mat4(1.0)
         # Player texture
         self.index = 0
         self.images = []
@@ -118,7 +119,7 @@ class Player:
             self.pos_data[10] += vel_y
         glBufferData(GL_ARRAY_BUFFER, self.pos_data.nbytes, self.pos_data, GL_DYNAMIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
-
+    """
     def rotate(self, deg): # WIP
 
         self.transform = glm.rotate(self.transform, glm.radians(deg), glm.vec3(0.0, 0.0, 1.0))
@@ -143,7 +144,7 @@ class Player:
             self.pos_data[10] = res_xy4[1]
         glBufferData(GL_ARRAY_BUFFER, self.pos_data.nbytes, self.pos_data, GL_DYNAMIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
-
+    """
     def move_handling(self, flying, game_over):
         keys = pygame.key.get_pressed()
 

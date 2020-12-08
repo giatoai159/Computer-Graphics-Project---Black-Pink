@@ -1,34 +1,53 @@
+from Globals import *
 from OpenGL.GL import *
 import numpy as np
-from Globals import *
 
 
-class Scene:
-    def __init__(self, image, x, y, width, height):
+class Pipe:
+    def __init__(self, x, y, width, height, is_upside_down):
+        # Pipe position
         self.x = x
         self.y = y
+        # Pipe size
         self.width = width
         self.height = height
         mod_x = self.x * 2 / display[0]
         mod_y = self.y * 2 / display[1]
         mod_width = self.width / display[0]
         mod_height = self.height / display[1]
-        self.image = pygame.image.load(image)
+        self.image = pygame.image.load("Textures/pipe.png")
         # Background position data
-        self.pos_data = [
-            -mod_width + mod_x, -mod_height + mod_y, 0,  # Bottom left
-            mod_width + mod_x, -mod_height + mod_y, 0,  # Bottom right
-            mod_width + mod_x, mod_height + mod_y, 0,  # Top right
-            -mod_width + mod_x, mod_height + mod_y, 0  # Top left
-        ]
+        if is_upside_down is True:
+            self.pos_data = [
+                -mod_width + mod_x, -mod_height + mod_y + pipe_gap*2/display[1], 0,  # Bottom left
+                mod_width + mod_x, -mod_height + mod_y + pipe_gap*2/display[1], 0,  # Bottom right
+                mod_width + mod_x, mod_height + mod_y + pipe_gap*2/display[1], 0,  # Top right
+                -mod_width + mod_x, mod_height + mod_y + pipe_gap*2/display[1], 0  # Top left
+            ]
+        else:
+            self.pos_data = [
+                -mod_width + mod_x, -mod_height + mod_y - pipe_gap*2/display[1], 0,  # Bottom left
+                mod_width + mod_x, -mod_height + mod_y - pipe_gap*2/display[1], 0,  # Bottom right
+                mod_width + mod_x, mod_height + mod_y - pipe_gap*2/display[1], 0,  # Top right
+                -mod_width + mod_x, mod_height + mod_y - pipe_gap*2/display[1], 0  # Top left
+            ]
         self.pos_data = np.array(self.pos_data, dtype=np.float32)
         # Background self.texture data
-        self.tex_coord_data = [
-            0.0, 0.0,  # Bottom left
-            1.0, 0.0,  # Bottom right
-            1.0, 1.0,  # Top right
-            0.0, 1.0  # Top left
-        ]
+        if is_upside_down is True:
+            self.tex_coord_data = [
+                0.0, 1.0,  # Bottom left
+                1.0, 1.0,  # Bottom right
+                1.0, 0.0,  # Top right
+                0.0, 0.0  # Top left
+            ]
+        else:
+            self.tex_coord_data = [
+                0.0, 0.0,  # Bottom left
+                1.0, 0.0,  # Bottom right
+                1.0, 1.0,  # Top right
+                0.0, 1.0  # Top left
+            ]
+
         self.tex_coord_data = np.array(self.tex_coord_data, dtype=np.float32)
         # Generate VAO and bind
         self.vao = glGenVertexArrays(1)
@@ -89,10 +108,4 @@ class Scene:
         ground_scroll = 0
         scroll_speed = 4
         ground_scroll -= scroll_speed
-        if abs(self.x) > 100:
-            self.move(100)
-        else:
-            self.move(ground_scroll)
-
-
-
+        self.move(ground_scroll)

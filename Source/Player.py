@@ -1,6 +1,5 @@
 import numpy as np
-import pygame, glm
-import Shaders.load as shader
+import glm
 from OpenGL.GL import *
 from Globals import *
 from pygame.locals import *
@@ -120,8 +119,8 @@ class Player:
         glBufferData(GL_ARRAY_BUFFER, self.pos_data.nbytes, self.pos_data, GL_DYNAMIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
 
-    def rotate(self, deg):
-        self.transform = glm.mat4(1.0)
+    def rotate(self, deg): # WIP
+
         self.transform = glm.rotate(self.transform, glm.radians(deg), glm.vec3(0.0, 0.0, 1.0))
         xy1 = glm.vec4(self.pos_data[0], self.pos_data[1], 0, 1)
         xy2 = glm.vec4(self.pos_data[3], self.pos_data[4], 0, 1)
@@ -131,7 +130,8 @@ class Player:
         res_xy2 = self.transform * xy2
         res_xy3 = self.transform * xy3
         res_xy4 = self.transform * xy4
-        glBindBuffer(GL_ARRAY_BUFFER, self.vbo[0])
+
+        glBindBuffer(GL_ARRAY_BUFFER, self.vbo[1])
         if deg != 0:
             self.pos_data[0] = res_xy1[0]
             self.pos_data[1] = res_xy1[1]
@@ -148,14 +148,15 @@ class Player:
         keys = pygame.key.get_pressed()
 
         if flying is True:
-            self.velocity -= 0.5
-            if self.velocity < 8:
-                self.velocity = -8
-            self.move(0, self.velocity)
+            self.velocity -= gravity_speed
+            if self.velocity < gravity:
+                self.velocity = -gravity
+            if self.y > -270:
+                self.move(0, self.velocity)
         if game_over is False:
             if keys[K_UP] and self.is_jump is False:
                 self.is_jump = True
-                self.velocity = 13
+                self.velocity = jump_height
                 self.move(0, self.velocity)
             if not keys[K_UP]:
                 self.is_jump = False
@@ -166,8 +167,6 @@ class Player:
                 self.index += 1
                 if self.index >= len(self.images):
                     self.index = 0
-            # self.rotate(10)
-
 
         """
         if not self.is_jump:

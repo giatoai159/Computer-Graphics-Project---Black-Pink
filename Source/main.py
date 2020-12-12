@@ -3,7 +3,7 @@ from Game import Game
 
 
 def main():
-    game = Game("Test")
+    game = Game("Flappy Bird")
     game.loop()
 
 

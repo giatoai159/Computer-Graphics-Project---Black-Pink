@@ -88,7 +88,6 @@ class Scene:
 
     def scrolling(self):
         ground_scroll = 0
-        scroll_speed = 4
         ground_scroll -= scroll_speed
         if abs(self.x) > 100:
             self.move(100)

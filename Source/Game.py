@@ -18,6 +18,16 @@ class Game:
         # Game variables
         self.flying = False
         self.game_over = False
+        self.score = 0
+        self.pass_pipe = False
+        # Sound
+        pygame.mixer.init(buffer=512)
+        self.theme = pygame.mixer.music.load("Sounds/themesong.mp3")
+        self.flap_sound = pygame.mixer.Sound("Sounds/sfx_wing.wav")
+        self.hit_sound = pygame.mixer.Sound("Sounds/sfx_hit.wav")
+        self.die_sound = pygame.mixer.Sound("Sounds/sfx_die.wav")
+        self.hit_played = False
+        self.score_sound = pygame.mixer.Sound("Sounds/sfx_point.wav")
         # PyGame Initialization
         pygame.init()
         while not pygame.get_init():
@@ -40,43 +50,60 @@ class Game:
         pipe_group = []
         last_pipe = pygame.time.get_ticks() - pipe_frequency
         # platform_1 = Platform(-200, -325, 300, 70)
+        pygame.mixer.music.play(-1)
         while self.is_running:
             self.timer.tick(fps)
             # glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-            glUseProgram(shader.program)
             # Check collision
             for i in range(0, len(pipe_group)):
                 if check_collision(player, pipe_group[i]):
                     self.game_over = True
-
+            # Check if bird hit top
             if player.y > 425:
                 self.game_over = True
             # Check if bird hit ground
             if player.y < -270:
                 self.game_over = True
                 self.flying = False
+            # Check score
+            if len(pipe_group) > 0:
+                if player.x - player.width / 2 > pipe_group[0].x - pipe_group[0].width / 2 and \
+                    player.x + player.width / 2 < pipe_group[0].x + pipe_group[0].width / 2 and\
+                        self.pass_pipe is False:
+                    self.pass_pipe = True
+                if self.pass_pipe is True:
+                    if player.x - player.width / 2 > pipe_group[0].x + pipe_group[0].width / 2:
+                        self.score += 1
+                        self.score_sound.play()
+                        self.pass_pipe = False
 
             if self.flying is True and self.game_over is False:
+                # Pipe random generation
                 time_now = pygame.time.get_ticks()
                 if time_now - last_pipe > pipe_frequency:
-                    pipe_height = random.randint(-150, 150)
+                    pipe_height = random.randint(-150, 250)
                     btm_pipe = Pipe(display[0], pipe_height, 78, 568, False)
                     top_pipe = Pipe(display[0], pipe_height, 78, 568, True)
                     pipe_group.append(btm_pipe)
                     pipe_group.append(top_pipe)
                     last_pipe = time_now
-
+                # Delete out of screen pipes
                 if pipe_group[0].x < -350:
                     pipe_group.pop(0)
-
+                # Scrolling pipes
                 for i in range(0, len(pipe_group)):
                     pipe_group[i].scrolling()
-
                 # Scrolling the ground
                 ground.scrolling()
 
             # Bird movement handling
-            player.move_handling(self.flying, self.game_over)
+            player.move_handling(self.flying, self.game_over, self.flap_sound)
+
+            if self.game_over is True:
+                if self.hit_played is False:
+                    self.hit_sound.play()
+                    self.die_sound.play()
+                    self.hit_played = True
 
             for event in pygame.event.get():
                 if event.type == QUIT:
@@ -84,16 +111,13 @@ class Game:
                 if event.type == KEYDOWN:
                     if event.key == K_UP and self.flying is False and self.game_over is False:
                         self.flying = True
-
-            # mouse = pygame.mouse.get_pos()
-            # print(mouse[0]-640, mouse[1]-360) # Print mouse position with OpenGL Oxy base (0, 0)
-            # print("Colliding: ", check_collision(player, platform_1))
-
+            glUseProgram(shader.program)
             bg.draw()
             player.draw()
             for i in range(0, len(pipe_group)):
                 pipe_group[i].draw()
             ground.draw()
+            drawText(0, 0.83, f'{self.score}')
             glUseProgram(0)
             pygame.display.flip()
 
@@ -104,6 +128,14 @@ def check_collision(player, collided_object):
     collision_y = player.y + player.height / 2 >= collided_object.y + leeway - collided_object.height / 2 and \
                   collided_object.y - leeway + collided_object.height / 2 >= player.y - player.height / 2
     return collision_x and collision_y
+
+
+def drawText(x, y, textString):
+    font = pygame.font.SysFont('Bauhaus 93', 50)
+    textSurface = font.render(textString, True, (255, 255, 255, 255))
+    textData = pygame.image.tostring(textSurface, "RGBA", True)
+    glRasterPos3d(x, y, 0)
+    glDrawPixels(textSurface.get_width(), textSurface.get_height(), GL_RGBA, GL_UNSIGNED_BYTE, textData)
 
 
 """

@@ -21,7 +21,7 @@ class Game:
         self.score = 0
         self.pass_pipe = False
         # Sound
-        pygame.mixer.init(buffer=512)
+        pygame.mixer.init(buffer=256)
         self.theme = pygame.mixer.music.load("Sounds/themesong.mp3")
         self.flap_sound = pygame.mixer.Sound("Sounds/sfx_wing.wav")
         self.hit_sound = pygame.mixer.Sound("Sounds/sfx_hit.wav")

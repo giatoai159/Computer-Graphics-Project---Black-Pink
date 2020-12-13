@@ -19,7 +19,7 @@ class Button:
         mod_width = self.image.get_width() / display[0]
         mod_height = self.image.get_height() / display[1]
 
-        # Background position data
+        # position data
         self.pos_data = [
             -mod_width + mod_x, -mod_height + mod_y, 0,  # Bottom left
             mod_width + mod_x, -mod_height + mod_y, 0,  # Bottom right
@@ -27,7 +27,7 @@ class Button:
             -mod_width + mod_x, mod_height + mod_y, 0  # Top left
         ]
         self.pos_data = np.array(self.pos_data, dtype=np.float32)
-        # Background self.texture data
+        # self.texture data
         self.tex_coord_data = [
             0.0, 0.0,  # Bottom left
             1.0, 0.0,  # Bottom right

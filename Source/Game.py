@@ -70,6 +70,8 @@ class Game:
             endText.active = False
             okButton.active = False
 
+            self.score = 0
+
             #=======
             # Ingame
             while (not self.game_over or not restart) and self.is_running:

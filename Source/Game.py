@@ -51,32 +51,33 @@ class Game:
         last_pipe = pygame.time.get_ticks() - pipe_frequency
         # platform_1 = Platform(-200, -325, 300, 70)
         pygame.mixer.music.play(-1)
+
+
         while self.is_running:
             self.timer.tick(fps)
-            # glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+            #=======
+            # Events
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    self.is_running = False
+                if event.type == KEYDOWN:
+                    if event.key == K_UP and self.flying is False and self.game_over is False:
+                        self.flying = True
+
+            #================
             # Check collision
             for i in range(0, len(pipe_group)):
                 if check_collision(player, pipe_group[i]):
                     self.game_over = True
-            # Check if bird hit top
             if player.y > 425:
                 self.game_over = True
-            # Check if bird hit ground
             if player.y < -270:
                 self.game_over = True
                 self.flying = False
-            # Check score
-            if len(pipe_group) > 0:
-                if player.x - player.width / 2 > pipe_group[0].x - pipe_group[0].width / 2 and \
-                    player.x + player.width / 2 < pipe_group[0].x + pipe_group[0].width / 2 and\
-                        self.pass_pipe is False:
-                    self.pass_pipe = True
-                if self.pass_pipe is True:
-                    if player.x - player.width / 2 > pipe_group[0].x + pipe_group[0].width / 2:
-                        self.score += 1
-                        self.score_sound.play()
-                        self.pass_pipe = False
 
+            #==============
+            # Pipes handing
             if self.flying is True and self.game_over is False:
                 # Pipe random generation
                 time_now = pygame.time.get_ticks()
@@ -96,21 +97,38 @@ class Game:
                 # Scrolling the ground
                 ground.scrolling()
 
+
+            #=======================
             # Bird movement handling
             player.move_handling(self.flying, self.game_over, self.flap_sound)
 
+
+            #============
+            # Check score
+            if len(pipe_group) > 0:
+                if player.x - player.width / 2 > pipe_group[0].x - pipe_group[0].width / 2 and \
+                    player.x + player.width / 2 < pipe_group[0].x + pipe_group[0].width / 2 and\
+                        self.pass_pipe is False:
+                    self.pass_pipe = True
+                if self.pass_pipe is True:
+                    if player.x - player.width / 2 > pipe_group[0].x + pipe_group[0].width / 2:
+                        self.score += 1
+                        self.score_sound.play()
+                        self.pass_pipe = False
+
+
+            #=======
+            # Sounds
             if self.game_over is True:
                 if self.hit_played is False:
                     self.hit_sound.play()
                     self.die_sound.play()
                     self.hit_played = True
 
-            for event in pygame.event.get():
-                if event.type == QUIT:
-                    self.is_running = False
-                if event.type == KEYDOWN:
-                    if event.key == K_UP and self.flying is False and self.game_over is False:
-                        self.flying = True
+
+            #=======
+            # Render
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
             glUseProgram(shader.program)
             bg.draw()
             for i in range(0, len(pipe_group)):

@@ -11,6 +11,8 @@ class Player:
         # Player position
         self.x = x
         self.y = y
+        # Player rotation
+        self.angle = 0.0 # Degree
         # Player size
         self.width = width
         self.height = height
@@ -19,7 +21,6 @@ class Player:
         self.is_jump = False
         self.velocity = 0
         self.counter = 0
-        self.transform = glm.mat4(1.0)
         # Player texture
         self.index = 0
         self.images = []
@@ -84,77 +85,86 @@ class Player:
             # Texture filtering
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-        """
-        self.transform = glm.mat4(1.0)
-        self.transform = glm.rotate(self.transform, glm.radians(90), glm.vec3(0.0, 0.0, 1.0))
-        print(self.transform)
-        glUseProgram(shader.program)
-        self.transformLoc = glGetUniformLocation(shader.program, "transform");
-        glUniformMatrix4fv(self.transformLoc, 1, GL_FALSE, glm.value_ptr(self.transform))
-        """
+
+
         glBindBuffer(GL_ARRAY_BUFFER, 0)
         glBindVertexArray(0)
 
     def draw(self):
+        self.rotate(self.angle)
         glBindTexture(GL_TEXTURE_2D, self.texture[self.index])
         glBindVertexArray(self.vao)
         glDrawArrays(GL_QUADS, 0, 4)
         glBindVertexArray(0)
+        self.rotate(-self.angle)
 
-    def move(self, vel_x, vel_y):
-        self.x += vel_x
-        self.y += vel_y
-        vel_x = vel_x * 2 / display[0]
-        vel_y = vel_y * 2 / display[1]
+    def move(self, dx, dy):
+        self.x += dx
+        self.y += dy
+        dx = dx * 2 / display[0]
+        dy = dy * 2 / display[1]
         glBindBuffer(GL_ARRAY_BUFFER, self.vbo[0])
-        if vel_x != 0:
-            self.pos_data[0] += vel_x
-            self.pos_data[3] += vel_x
-            self.pos_data[6] += vel_x
-            self.pos_data[9] += vel_x
-        if vel_y != 0:
-            self.pos_data[1] += vel_y
-            self.pos_data[4] += vel_y
-            self.pos_data[7] += vel_y
-            self.pos_data[10] += vel_y
+
+        if dx != 0:
+            self.pos_data[0] += dx
+            self.pos_data[3] += dx
+            self.pos_data[6] += dx
+            self.pos_data[9] += dx
+        if dy != 0:
+            self.pos_data[1] += dy
+            self.pos_data[4] += dy
+            self.pos_data[7] += dy
+            self.pos_data[10] += dy
+
         glBufferData(GL_ARRAY_BUFFER, self.pos_data.nbytes, self.pos_data, GL_DYNAMIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
 
-    def rotate(self, deg):  # WIP
-        temp_x = self.x
-        temp_y = self.y
-        self.move(-temp_x, -temp_y)
-        self.transform = glm.rotate(self.transform, glm.radians(deg), glm.vec3(0.0, 0.0, 1.0))
+    # Params:
+    #   Deg: specify the angle that the bird is pointing to
+    def rotate(self, deltaDegree):  # WIP
+        if deltaDegree == 0:
+            return
+
+        dx = self.x * 2 / display[0]
+        dy = self.y * 2 / display[1]
+        transform = glm.mat4(1)
+        transform = glm.translate(transform, glm.vec3(dx, dy, 0))
+        transform = glm.rotate(transform, glm.radians(deltaDegree), glm.vec3(0.0, 0.0, 1.0))
+        transform = glm.translate(transform, glm.vec3(-dx, -dy, 0))
+
         xy1 = glm.vec4(self.pos_data[0], self.pos_data[1], 0, 1)
         xy2 = glm.vec4(self.pos_data[3], self.pos_data[4], 0, 1)
         xy3 = glm.vec4(self.pos_data[6], self.pos_data[7], 0, 1)
         xy4 = glm.vec4(self.pos_data[9], self.pos_data[10], 0, 1)
-        res_xy1 = self.transform * xy1
-        res_xy2 = self.transform * xy2
-        res_xy3 = self.transform * xy3
-        res_xy4 = self.transform * xy4
+        res_xy1 = transform * xy1
+        res_xy2 = transform * xy2
+        res_xy3 = transform * xy3
+        res_xy4 = transform * xy4
         glBindBuffer(GL_ARRAY_BUFFER, self.vbo[0])
-        if deg != 0:
-            self.pos_data[0] = res_xy1[0]
-            self.pos_data[1] = res_xy1[1]
-            self.pos_data[3] = res_xy2[0]
-            self.pos_data[4] = res_xy2[1]
-            self.pos_data[6] = res_xy3[0]
-            self.pos_data[7] = res_xy3[1]
-            self.pos_data[9] = res_xy4[0]
-            self.pos_data[10] = res_xy4[1]
+
+        self.pos_data[0] = res_xy1[0]
+        self.pos_data[1] = res_xy1[1]
+        self.pos_data[3] = res_xy2[0]
+        self.pos_data[4] = res_xy2[1]
+        self.pos_data[6] = res_xy3[0]
+        self.pos_data[7] = res_xy3[1]
+        self.pos_data[9] = res_xy4[0]
+        self.pos_data[10] = res_xy4[1]
+
         glBufferData(GL_ARRAY_BUFFER, self.pos_data.nbytes, self.pos_data, GL_DYNAMIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
-        self.move(temp_x, temp_y)
 
     def move_handling(self, flying, game_over, flap_sound):
         jump = pygame.mouse.get_pressed(3)[0] | pygame.key.get_pressed()[K_UP]
+
         if flying is True:
             self.velocity -= gravity_speed
             if self.velocity < gravity:
                 self.velocity = -gravity
             if self.y > -270:
                 self.move(0, self.velocity)
+            self.angle = self.velocity * 2
+
         if game_over is False:
             if jump and self.is_jump is False:
                 self.is_jump = True

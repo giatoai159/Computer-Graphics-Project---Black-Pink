@@ -21,7 +21,8 @@ class Game:
         self.score = 0
         self.pass_pipe = False
         # Sound
-        pygame.mixer.init(buffer=256)
+        pygame.mixer.pre_init(buffer=256)
+        pygame.mixer.init()
         self.theme = pygame.mixer.music.load(path_themesong)
         self.flap_sound = pygame.mixer.Sound(path_wingsound)
         self.hit_sound = pygame.mixer.Sound(path_hitsound)
@@ -48,7 +49,8 @@ class Game:
 
         while self.is_running:
             # HUD
-            startButton = Button(0, 50, path_buttonStart)
+            startButton = Button(0, 30, path_buttonStart)
+            okButton = Button(0, 30, path_buttonOk)
             startText = Button(0, 100, path_textStart)
             endText = Button(0, 100, path_textEnd)
 
@@ -66,6 +68,7 @@ class Game:
             startButton.active = True
             startText.active = True
             endText.active = False
+            okButton.active = False
 
             #=======
             # Ingame
@@ -85,7 +88,7 @@ class Game:
 
                     if event.type == MOUSEBUTTONDOWN:
                         if self.game_over:
-                            restart = True
+                            restart = okButton.isHovered()
 
                         isFlying = isFlying | pygame.mouse.get_pressed(3)[0]
                         isFlying = isFlying & startButton.isHovered()
@@ -132,6 +135,7 @@ class Game:
                     self.flying = False
                 if self.game_over:
                     endText.active = True
+                    okButton.active = True
 
                 #============
                 # Check score
@@ -174,6 +178,7 @@ class Game:
                 startButton.draw()
                 startText.draw()
                 endText.draw()
+                okButton.draw()
 
                 # Draw UI
                 #drawText(0, 0.83, f'{self.score}')

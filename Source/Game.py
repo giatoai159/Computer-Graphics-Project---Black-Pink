@@ -58,12 +58,17 @@ class Game:
 
             #=======
             # Events
+            isFlying = False
             for event in pygame.event.get():
                 if event.type == QUIT:
                     self.is_running = False
                 if event.type == MOUSEBUTTONDOWN:
-                    if pygame.mouse.get_pressed(3)[0] and self.flying is False and self.game_over is False:
-                        self.flying = True
+                    isFlying = isFlying | pygame.mouse.get_pressed(3)[0]
+                if event.type == KEYDOWN:
+                    isFlying = isFlying | event.key == K_UP
+
+            if isFlying and not self.flying and not self.game_over:
+                self.flying = True
 
             #================
             # Check collision
@@ -95,6 +100,7 @@ class Game:
                 for i in range(0, len(pipe_group)):
                     pipe_group[i].scrolling()
 
+            #=====================
             # Scrolling the ground
             if not self.game_over:
                 ground.scrolling()

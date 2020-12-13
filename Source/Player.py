@@ -148,7 +148,7 @@ class Player:
         self.move(temp_x, temp_y)
 
     def move_handling(self, flying, game_over, flap_sound):
-        jump = pygame.mouse.get_pressed(3)[0]
+        jump = pygame.mouse.get_pressed(3)[0] | pygame.key.get_pressed()[K_UP]
         if flying is True:
             self.velocity -= gravity_speed
             if self.velocity < gravity:

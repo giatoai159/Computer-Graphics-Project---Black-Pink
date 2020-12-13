@@ -148,7 +148,7 @@ class Player:
         self.move(temp_x, temp_y)
 
     def move_handling(self, flying, game_over, flap_sound):
-        keys = pygame.key.get_pressed()
+        jump = pygame.mouse.get_pressed(3)[0]
         if flying is True:
             self.velocity -= gravity_speed
             if self.velocity < gravity:
@@ -156,12 +156,12 @@ class Player:
             if self.y > -270:
                 self.move(0, self.velocity)
         if game_over is False:
-            if keys[K_UP] and self.is_jump is False:
+            if jump and self.is_jump is False:
                 self.is_jump = True
                 self.velocity = jump_height
                 self.move(0, self.velocity)
                 flap_sound.play()
-            if not keys[K_UP]:
+            if not jump:
                 self.is_jump = False
             # Animation handling
             self.counter += 1

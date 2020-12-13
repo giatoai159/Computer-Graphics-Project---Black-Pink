@@ -61,8 +61,8 @@ class Game:
             for event in pygame.event.get():
                 if event.type == QUIT:
                     self.is_running = False
-                if event.type == KEYDOWN:
-                    if event.key == K_UP and self.flying is False and self.game_over is False:
+                if event.type == MOUSEBUTTONDOWN:
+                    if pygame.mouse.get_pressed(3)[0] and self.flying is False and self.game_over is False:
                         self.flying = True
 
             #================

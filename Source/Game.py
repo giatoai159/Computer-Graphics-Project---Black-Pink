@@ -181,8 +181,7 @@ class Game:
                 okButton.draw()
 
                 # Draw UI
-                #drawText(0, 0.83, f'{self.score}')
-
+                drawText(-0.1, 0.6, f'{self.score}')
 
                 glUseProgram(0)
                 pygame.display.flip()
@@ -198,7 +197,7 @@ def check_collision(player, collided_object):
 
 
 def drawText(x, y, textString):
-    font = pygame.font.SysFont('Bauhaus 93', 50)
+    font = pygame.font.SysFont('Bauhaus 93', 150)
     textSurface = font.render(textString, True, (255, 255, 255, 255))
     textData = pygame.image.tostring(textSurface, "RGBA", True)
     glRasterPos3d(x, y, 0)

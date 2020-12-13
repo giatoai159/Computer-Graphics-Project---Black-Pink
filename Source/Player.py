@@ -96,6 +96,7 @@ class Player:
         glBindVertexArray(self.vao)
         glDrawArrays(GL_QUADS, 0, 4)
         glBindVertexArray(0)
+        glBindTexture(GL_TEXTURE_2D, 0)
         self.rotate(-self.angle)
 
     def move(self, dx, dy):

@@ -4,9 +4,11 @@ from OpenGL.GL import *
 import numpy as np
 
 
-class Button: WIP
+class Button:
     def __init__(self, x, y, path_texture):
         self.image = pygame.image.load(path_texture)
+
+        self.active = True
 
         # Position
         self.x = x
@@ -71,7 +73,24 @@ class Button: WIP
 
 
     def draw(self):
+        if not self.active:
+            return
+
         glBindTexture(GL_TEXTURE_2D, self.texture)
         glBindVertexArray(self.vao)
         glDrawArrays(GL_QUADS, 0, 4)
         glBindVertexArray(0)
+
+    def isHovered(self):
+        if not self.active:
+            return False
+
+        width = self.image.get_width()
+        height = self.image.get_height()
+        top = display[1] / 2 - self.y - height / 2
+        left = self.x - width / 2 + display[0] / 2
+
+        rect = pygame.rect.Rect(left, top, width, height)
+        return rect.collidepoint(pygame.mouse.get_pos())
+
+

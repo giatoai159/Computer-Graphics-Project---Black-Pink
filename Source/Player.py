@@ -155,9 +155,10 @@ class Player:
         glBindBuffer(GL_ARRAY_BUFFER, 0)
 
     def move_handling(self, flying, game_over, flap_sound):
-        jump = pygame.mouse.get_pressed(3)[0] | pygame.key.get_pressed()[K_UP]
+        jump = False
 
         if flying is True:
+            jump = pygame.mouse.get_pressed(3)[0] | pygame.key.get_pressed()[K_UP]
             self.velocity -= gravity_speed
             if self.velocity < gravity:
                 self.velocity = -gravity

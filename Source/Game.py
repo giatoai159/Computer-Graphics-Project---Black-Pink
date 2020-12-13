@@ -113,10 +113,10 @@ class Game:
                         self.flying = True
             glUseProgram(shader.program)
             bg.draw()
-            player.draw()
             for i in range(0, len(pipe_group)):
                 pipe_group[i].draw()
             ground.draw()
+            player.draw()
             drawText(0, 0.83, f'{self.score}')
             glUseProgram(0)
             pygame.display.flip()

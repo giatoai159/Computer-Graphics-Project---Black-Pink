@@ -94,7 +94,9 @@ class Game:
                 # Scrolling pipes
                 for i in range(0, len(pipe_group)):
                     pipe_group[i].scrolling()
-                # Scrolling the ground
+
+            # Scrolling the ground
+            if not self.game_over:
                 ground.scrolling()
 
 

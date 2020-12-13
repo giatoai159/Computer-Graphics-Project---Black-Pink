@@ -7,7 +7,7 @@ from Globals import *
 from Player import Player
 from Scene import Scene
 from Pipe import Pipe
-
+from Button import Button
 
 class Game:
     def __init__(self, game_name, icon=None):
@@ -22,12 +22,12 @@ class Game:
         self.pass_pipe = False
         # Sound
         pygame.mixer.init(buffer=256)
-        self.theme = pygame.mixer.music.load("Sounds/themesong.mp3")
-        self.flap_sound = pygame.mixer.Sound("Sounds/sfx_wing.wav")
-        self.hit_sound = pygame.mixer.Sound("Sounds/sfx_hit.wav")
-        self.die_sound = pygame.mixer.Sound("Sounds/sfx_die.wav")
+        self.theme = pygame.mixer.music.load(path_themesong)
+        self.flap_sound = pygame.mixer.Sound(path_wingsound)
+        self.hit_sound = pygame.mixer.Sound(path_hitsound)
+        self.die_sound = pygame.mixer.Sound(path_diesound)
         self.hit_played = False
-        self.score_sound = pygame.mixer.Sound("Sounds/sfx_point.wav")
+        self.score_sound = pygame.mixer.Sound(path_scoresound)
         # PyGame Initialization
         pygame.init()
         while not pygame.get_init():
@@ -44,9 +44,13 @@ class Game:
         shader.compile_shader()
 
     def loop(self):
+        # HUD
+        startButton = Button(0, 0, path_buttonStart)
+
+        # Playground
         player = Player(-150, 0, 51, 36)
-        bg = Scene("Textures/bg.png", 0, 100, 864, 768)
-        ground = Scene("Textures/ground.png", 0, -368, 900, 168)
+        bg = Scene(path_bg, 0, 100, 864, 768)
+        ground = Scene(path_ground, 0, -368, 900, 168)
         pipe_group = []
         last_pipe = pygame.time.get_ticks() - pipe_frequency
         # platform_1 = Platform(-200, -325, 300, 70)
@@ -54,8 +58,6 @@ class Game:
 
 
         while self.is_running:
-            self.timer.tick(fps)
-
             #=======
             # Events
             isFlying = False
@@ -144,8 +146,14 @@ class Game:
             ground.draw()
             player.draw()
             drawText(0, 0.83, f'{self.score}')
+
+            # Draw Menu
+            startButton.draw()
+
             glUseProgram(0)
             pygame.display.flip()
+            self.timer.tick(fps)
+
 
 
 def check_collision(player, collided_object):

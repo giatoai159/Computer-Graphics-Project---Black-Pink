@@ -18,7 +18,7 @@ class Pipe:
         mod_width = self.width / display[0]
         mod_height = self.height / display[1]
 
-        self.image = pygame.image.load("Textures/pipe.png")
+        self.image = pygame.image.load(path_pipe)
         # Background position data
         if self.is_upside_down is True:
             self.y = self.y + pipe_gap

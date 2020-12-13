@@ -54,7 +54,7 @@ class Player:
         # And bind the vertex array
         glBindVertexArray(self.vao)
         # Generate a vertex buffer object for the VAO
-        self.vbo = glGenBuffers(3)  # Generate 2, one for position data, one for texture data
+        self.vbo = glGenBuffers(2)  # Generate 2, one for position data, one for texture data
         # Position processing
         glBindBuffer(GL_ARRAY_BUFFER, self.vbo[0])
         glBufferData(GL_ARRAY_BUFFER, self.pos_data.nbytes, self.pos_data, GL_DYNAMIC_DRAW)

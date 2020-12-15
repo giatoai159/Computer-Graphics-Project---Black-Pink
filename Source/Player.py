@@ -86,7 +86,6 @@ class Player:
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
 
-
         glBindBuffer(GL_ARRAY_BUFFER, 0)
         glBindVertexArray(0)
 
@@ -165,7 +164,7 @@ class Player:
                 self.velocity = -gravity
             if self.y > -270:
                 self.move(0, self.velocity)
-            self.angle = self.velocity * 2
+            self.angle = self.velocity * 1.1
 
         if game_over is False:
             if jump and self.is_jump is False:
@@ -182,24 +181,3 @@ class Player:
                 self.index += 1
                 if self.index >= len(self.images):
                     self.index = 0
-
-            # rotate the bird
-            # self.rotate(self.velocity)
-
-
-        """
-        if not self.is_jump:
-            if keys[K_UP]:
-                self.is_jump = True
-            
-        else:
-            if self.jump_count >= -self.base_gravity:
-                neg = 1
-                if self.jump_count < 0:
-                    neg = -1
-                self.move(0, (self.jump_count ** 2) * 0.3 * neg)
-                self.jump_count -= 1
-            else:
-                self.is_jump = False
-                self.jump_count = 13
-        """

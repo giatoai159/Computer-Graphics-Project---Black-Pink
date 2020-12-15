@@ -48,7 +48,6 @@ class Scene:
         glEnableVertexAttribArray(1)
         # Texture binding to current vbo
         self.texture = glGenTextures(1)
-        glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D, self.texture)
         texture_width = self.image.get_width()
         texture_height = self.image.get_height()

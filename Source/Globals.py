@@ -17,6 +17,8 @@ pipe_frequency = 1500 # milliseconds
 
 
 # Path
+path_gameName = "Textures/flappybird.png"
+
 path_buttonStart = "Textures/button_start.png"
 path_textStart = "Textures/getready.png"
 path_textEnd = "Textures/gameover.png"

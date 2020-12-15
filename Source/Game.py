@@ -9,6 +9,7 @@ from Scene import Scene
 from Pipe import Pipe
 from Button import Button
 
+
 class Game:
     def __init__(self, game_name, icon=None):
         self.game_name = game_name
@@ -49,10 +50,11 @@ class Game:
 
         while self.is_running:
             # HUD
-            startButton = Button(0, 30, path_buttonStart)
-            okButton = Button(0, 30, path_buttonOk)
-            startText = Button(0, 100, path_textStart)
-            endText = Button(0, 100, path_textEnd)
+            start_button = Button(0, 30, path_buttonStart)
+            ok_button = Button(0, 30, path_buttonOk)
+            game_name = Button(0, 250, path_gameName)
+            start_text = Button(0, 100, path_textStart)
+            end_text = Button(0, 100, path_textEnd)
 
             # Playground
             player = Player(-150, 0, 51, 36)
@@ -65,19 +67,20 @@ class Game:
             self.game_over = False
             self.flying = False
             self.hit_played = False
-            startButton.active = True
-            startText.active = True
-            endText.active = False
-            okButton.active = False
+            game_name.active = True
+            start_button.active = True
+            start_text.active = True
+            end_text.active = False
+            ok_button.active = False
 
             self.score = 0
 
-            #=======
-            # Ingame
+            # =======
+            # In-game
             while (not self.game_over or not restart) and self.is_running:
-                #=======
+                # =======
                 # Events
-                isFlying = False
+                is_flying = False
                 for event in pygame.event.get():
                     if event.type == QUIT:
                         self.is_running = False
@@ -86,26 +89,26 @@ class Game:
                         if self.game_over:
                             restart = True
 
-                        isFlying = isFlying | event.key == K_UP
+                        is_flying = is_flying | event.key == K_UP
 
                     if event.type == MOUSEBUTTONDOWN:
                         if self.game_over:
-                            restart = okButton.isHovered()
+                            restart = ok_button.isHovered()
 
-                        isFlying = isFlying | pygame.mouse.get_pressed(3)[0]
-                        isFlying = isFlying & startButton.isHovered()
+                        is_flying = is_flying | pygame.mouse.get_pressed(3)[0]
+                        is_flying = is_flying & start_button.isHovered()
 
-                if isFlying and not self.flying and not self.game_over:
+                if is_flying and not self.flying and not self.game_over:
                     self.flying = True
-                    startButton.active = False
-                    startText.active = False
+                    start_button.active = False
+                    start_text.active = False
+                    game_name.active = False
 
-
-                #=======================
+                # =======================
                 # Controller
                 player.move_handling(self.flying, self.game_over, self.flap_sound)
 
-                #==============
+                # ==============
                 # Pipes handing
                 if self.flying is True and self.game_over is False:
                     # Pipe random generation
@@ -124,8 +127,7 @@ class Game:
                     for i in range(0, len(pipe_group)):
                         pipe_group[i].scrolling()
 
-
-                #================
+                # ================
                 # Check collision
                 for i in range(0, len(pipe_group)):
                     if check_collision(player, pipe_group[i]):
@@ -136,14 +138,14 @@ class Game:
                     self.game_over = True
                     self.flying = False
                 if self.game_over:
-                    endText.active = True
-                    okButton.active = True
+                    end_text.active = True
+                    ok_button.active = True
 
-                #============
+                # ============
                 # Check score
                 if len(pipe_group) > 0:
                     if player.x - player.width / 2 > pipe_group[0].x - pipe_group[0].width / 2 and \
-                        player.x + player.width / 2 < pipe_group[0].x + pipe_group[0].width / 2 and\
+                            player.x + player.width / 2 < pipe_group[0].x + pipe_group[0].width / 2 and \
                             self.pass_pipe is False:
                         self.pass_pipe = True
                     if self.pass_pipe is True:
@@ -152,12 +154,12 @@ class Game:
                             self.score_sound.play()
                             self.pass_pipe = False
 
-                #=====================
+                # =====================
                 # Scrolling the ground
                 if not self.game_over:
                     ground.scrolling()
 
-                #=======
+                # =======
                 # Sounds
                 if self.game_over is True:
                     if self.hit_played is False:
@@ -165,8 +167,7 @@ class Game:
                         self.die_sound.play()
                         self.hit_played = True
 
-
-                #=======
+                # =======
                 # Render
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
                 glUseProgram(shader.program)
@@ -177,13 +178,22 @@ class Game:
                 player.draw()
 
                 # Draw Menu
-                startButton.draw()
-                startText.draw()
-                endText.draw()
-                okButton.draw()
+                game_name.draw()
+                start_button.draw()
+                start_text.draw()
+                end_text.draw()
+                ok_button.draw()
 
-                # Draw UI
-                drawText(-0.1, 0.6, f'{self.score}')
+                # Draw Score
+                i = 0
+                numbers = list(str(self.score))
+                length_numbers = len(numbers)
+                for number in numbers:
+                    path_button_score = "Textures/" + number + ".png"
+                    score_text = Scene(path_button_score, 0 - (length_numbers - 1) * 25 + i * 40, 350, 36, 54)
+                    score_text.draw()
+
+                    i = i + 1
 
                 glUseProgram(0)
                 pygame.display.flip()
@@ -196,73 +206,3 @@ def check_collision(player, collided_object):
     collision_y = player.y + player.height / 2 >= collided_object.y + leeway - collided_object.height / 2 and \
                   collided_object.y - leeway + collided_object.height / 2 >= player.y - player.height / 2
     return collision_x and collision_y
-
-
-def drawText(x, y, textString):
-    font = pygame.font.SysFont('Bauhaus 93', 150)
-    textSurface = font.render(textString, True, (255, 255, 255, 255))
-    textData = pygame.image.tostring(textSurface, "RGBA", True)
-    glRasterPos3d(x, y, 0)
-    glDrawPixels(textSurface.get_width(), textSurface.get_height(), GL_RGBA, GL_UNSIGNED_BYTE, textData)
-
-
-"""
-class Platform:
-    def __init__(self, x, y, width, height):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-
-        self.vao = glGenVertexArrays(1)
-        self.vbo = glGenBuffers(2)
-
-        mod_x = self.x * 2 / display[0]
-        mod_y = self.y * 2 / display[1]
-        mod_width = self.width / display[0]
-        mod_height = self.height / display[1]
-
-        self.pos_data = [
-            -mod_width + mod_x, -mod_height + mod_y, 0,
-            mod_width + mod_x, -mod_height + mod_y, 0,
-            mod_width + mod_x, mod_height + mod_y, 0,
-            -mod_width + mod_x, mod_height + mod_y, 0
-        ]
-        self.pos_data = np.array(self.pos_data, dtype=np.float32)
-
-        self.color_data = [
-            1.0, 0.0, 0.0,
-            0.0, 1.0, 0.0,
-            0.0, 0.0, 1.0,
-            1.0, 0.0, 1.0
-        ]
-        self.color_data = np.array(self.color_data, dtype=np.float32)
-
-        glBindVertexArray(self.vao)
-
-        # Position processing
-        glBindBuffer(GL_ARRAY_BUFFER, self.vbo[0])
-        glBufferData(GL_ARRAY_BUFFER, self.pos_data.nbytes, self.pos_data, GL_DYNAMIC_DRAW)
-
-        platform_pos = glGetAttribLocation(shader.program, 'aPos')
-        glVertexAttribPointer(platform_pos, 3, GL_FLOAT, GL_FALSE, 0, None)
-        glEnableVertexAttribArray(0)
-
-        # Color processing
-
-        glBindBuffer(GL_ARRAY_BUFFER, self.vbo[1])
-        glBufferData(GL_ARRAY_BUFFER, self.color_data.nbytes, self.color_data, GL_STATIC_DRAW)
-
-        platform_color = glGetAttribLocation(shader.program, 'aColor')
-        glVertexAttribPointer(platform_color, 3, GL_FLOAT, GL_FALSE, 0, None)
-        glEnableVertexAttribArray(1)
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
-        glBindVertexArray(0)
-
-    def render_platform(self):
-        glBindVertexArray(self.vao)
-        glDrawArrays(GL_QUADS, 0, 4)
-        glBindVertexArray(0)
-
-"""
